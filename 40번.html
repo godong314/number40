@@ -1,0 +1,565 @@
+<html><head><base href="." />
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background-image: url('KakaoTalk_20241207_173410378_02.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    position: relative;
+    min-height: 100vh;
+  }
+
+  /* Modify the semi-transparent overlay to be less opaque */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.3); /* Change from 0.5 to 0.3 for more visibility */
+    z-index: -1;
+  }
+
+  /* Adjust problem container background to be more transparent */
+  .problem-container {
+    display: none;
+    background: rgba(255, 255, 255, 0.7); /* Change from 0.8 to 0.7 for slightly more transparency */
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    text-shadow: 0 0 2px rgba(255, 255, 255, 0.8); /* Add text shadow for better readability */
+  }
+
+  .problem-container.active {
+    display: block;
+  }
+
+  /* Add title styles */
+  .page-title {
+    text-align: center;
+    font-size: 3em;
+    color: #333;
+    margin-bottom: 30px;
+    font-weight: bold;
+    text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.9), -2px -2px 4px rgba(255, 255, 255, 0.9); /* Add stronger text shadow */
+    padding: 20px 0;
+    background-color: rgba(255, 255, 255, 0.4); /* Change from 0.5 to 0.4 for more transparency */
+    border-radius: 10px;
+  }
+
+  .type-selection {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    justify-content: center;
+  }
+
+  .type-button {
+    padding: 10px 20px;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    background: #007bff;
+    color: white;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+
+  .type-button:hover {
+    background: #0056b3;
+  }
+
+  .type-button.active {
+    background: #28a745;
+  }
+
+  .first-paragraph {
+    font-weight: bold;
+    margin-bottom: 20px;
+    padding: 10px;
+    background: #e9ecef;
+    border-radius: 5px;
+  }
+
+  .paragraph-option {
+    margin: 10px 0;
+    padding: 10px;
+    background: #f8f9fa;
+    border: 2px solid #dee2e6;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .paragraph-option:hover {
+    background: #e9ecef;
+  }
+
+  .paragraph-option.selected {
+    background: #007bff;
+    color: white;
+    border-color: #0056b3;
+  }
+
+  .answer-slots {
+    display: flex;
+    gap: 10px;
+    margin: 20px 0;
+  }
+
+  .answer-slot {
+    flex: 1;
+    height: 40px;
+    border: 2px dashed #dee2e6;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+  }
+
+  .check-answer {
+    background: #28a745;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+  }
+
+  .check-answer:hover {
+    background: #218838;
+  }
+
+  .result {
+    margin-top: 20px;
+    padding: 10px;
+    border-radius: 5px;
+    text-align: center;
+    font-weight: bold;
+  }
+
+  .correct {
+    background: #d4edda;
+    color: #155724;
+  }
+
+  .incorrect {
+    background: #f8d7da;
+    color: #721c24;
+  }
+
+  .blank-text {
+    margin-bottom: 20px;
+    line-height: 1.6;
+  }
+
+  .blank {
+    border-bottom: 2px solid #007bff;
+    padding: 0 5px;
+    color: #007bff;
+    font-weight: bold;
+    min-width: 200px; /* Add minimum width */
+    display: inline-block; /* Make it block to maintain width */
+    margin: 0 10px; /* Add some spacing around the blank */
+  }
+
+  .choices {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 20px 0;
+  }
+
+  .choice {
+    padding: 10px;
+    border: 2px solid #dee2e6;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+
+  .choice:hover {
+    background: #e9ecef;
+  }
+
+  .choice.selected {
+    background: #007bff;
+    color: white;
+    border-color: #0056b3;
+  }
+
+  .insert-sentence {
+    background: #e9ecef;
+    padding: 20px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+  }
+
+  .sentence-to-insert {
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+
+  .instruction {
+    color: #666;
+    font-style: italic;
+  }
+
+  .insert-text {
+    line-height: 1.8;
+    position: relative;
+  }
+
+  .insert-option {
+    display: block;
+    padding: 10px;
+    margin: 10px 0;
+    background: #f8f9fa;
+    border: 2px solid #dee2e6;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+
+  .insert-option:hover {
+    background: #e9ecef;
+  }
+
+  .insert-option.selected {
+    background: #007bff;
+    color: white;
+    border-color: #0056b3;
+  }
+</style>
+</head>
+<body>
+  <h1 class="page-title">가연 보아라</h1>
+  <div class="type-selection">
+    <button class="type-button" data-type="sequence">순서</button>
+    <button class="type-button" data-type="blank">빈칸</button>
+    <button class="type-button" data-type="insert">삽입</button>
+  </div>
+
+  <div class="problem-container" id="sequence-problem">
+    <div class="first-paragraph"></div>
+    <div id="paragraphs"></div>
+    <div class="answer-slots">
+      <div class="answer-slot">1번</div>
+      <div class="answer-slot">2번</div>
+      <div class="answer-slot">3번</div>
+    </div>
+    <button class="check-answer">정답 확인</button>
+    <div class="result"></div>
+  </div>
+
+  <div class="problem-container" id="blank-problem">
+    <div class="blank-text"></div>
+    <div class="choices"></div>
+    <button class="check-answer">정답 확인</button>
+    <div class="result"></div>
+  </div>
+
+  <div class="problem-container" id="insert-problem">
+    <div class="insert-sentence">
+      <p class="sentence-to-insert"></p>
+      <p class="instruction">다음 중 해당 문장이 삽입될 위치를 고르시오.</p>
+    </div>
+    <div class="insert-text"></div>
+    <button class="check-answer">정답 확인</button>
+    <div class="result"></div>
+  </div>
+
+<script>
+const sequenceText = {
+  first: "Punishing a child may not be effective due to what Álvaro Bilbao, a neuropsychologist, calls 'trick­punishments.' A trick­punishment is a scolding, a moment of anger or a punishment in the most classic sense of the word.",
+  paragraphs: [
+    "Instead of discouraging the child from doing something, it encourages them to do it. For example, Hugh learns that when he hits his little brother, his mother scolds him.",
+    "For a child who feels lonely, being scolded is much better than feeling invisible, so he will continue to hit his brother. In this case, his mother would be better adopting a different strategy.",
+    "For instance, she could congratulate Hugh when he has not hit his brother for a certain length of time. The mother clearly cannot allow the child to hit his little brother, but instead of constantly pointing out the negatives, she can choose to reward the positives. In this way, any parent can avoid trick­punishments"
+  ]
+};
+
+const blankText = {
+  fullText: `Punishing a child may not be effective due to what Álvaro Bilbao, a neuropsychologist, calls 'trick­punishments.' A trick­punishment is a scolding, a moment of anger or a punishment in the most classic sense of the word. Instead of discouraging the child from doing something, it [encourages them to do it]. For example, Hugh learns that when he hits his little brother, his mother scolds him. For a child who feels lonely, being scolded is much better than feeling invisible, so he will continue to hit his brother. In this case, his mother would be better [adopting a different strategy]. For instance, she could congratulate Hugh when he has not hit his brother for a certain length of time. The mother clearly cannot allow the child to hit his little brother, but instead of constantly pointing out the negatives, she can [choose to reward the positives]. In this way, any parent can avoid trick­punishments`,
+  blanks: [
+    {
+      text: "encourages them to do it",
+      alternatives: [
+        "discourages their behavior",
+        "prevents future incidents",
+        "stops the negative action",
+        "deters unwanted behavior"
+      ]
+    },
+    {
+      text: "adopting a different strategy",
+      alternatives: [
+        "maintaining the same approach",
+        "continuing with punishment",
+        "increasing the scolding",
+        "ignoring the behavior completely"
+      ]
+    },
+    {
+      text: "choose to reward the positives",
+      alternatives: [
+        "focus on the negative aspects",
+        "continue with punishments",
+        "ignore good behavior",
+        "emphasize bad actions"
+      ]
+    }
+  ]
+};
+
+const insertText = {
+  sentenceToInsert: "For example, Hugh learns that when he hits his little brother, his mother scolds him.",
+  text: [
+    "Punishing a child may not be effective due to what Álvaro Bilbao, a neuropsychologist, calls 'trick­punishments.'",
+    "A trick­punishment is a scolding, a moment of anger or a punishment in the most classic sense of the word.",
+    "Instead of discouraging the child from doing something, it encourages them to do it.",
+    "For a child who feels lonely, being scolded is much better than feeling invisible, so he will continue to hit his brother.",
+    "In this case, his mother would be better adopting a different strategy.",
+    "For instance, she could congratulate Hugh when he has not hit his brother for a certain length of time.",
+    "The mother clearly cannot allow the child to hit his little brother, but instead of constantly pointing out the negatives, she can choose to reward the positives.",
+    "In this way, any parent can avoid trick­punishments"
+  ],
+  correctPosition: 2 // After "Instead of discouraging..." (0-based index)
+};
+
+let correctOrder = [];
+let currentSelection = [];
+let currentProblemType = null;
+let selectedBlank = null;
+let currentBlankAnswer = null;
+let selectedInsertPosition = null;
+
+function initializeTypeSelection() {
+  document.querySelectorAll('.type-button').forEach(button => {
+    button.addEventListener('click', () => {
+      document.querySelectorAll('.problem-container').forEach(container => {
+        container.classList.remove('active');
+      });
+      document.querySelectorAll('.type-button').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      button.classList.add('active');
+      currentProblemType = button.dataset.type;
+      document.getElementById(`${currentProblemType}-problem`).classList.add('active');
+      
+      if (currentProblemType === 'sequence') {
+        initializeSequenceProblem();
+      } else if (currentProblemType === 'blank') {
+        initializeBlankProblem();
+      } else if (currentProblemType === 'insert') {
+        initializeInsertProblem();
+      }
+    });
+  });
+}
+
+function initializeSequenceProblem() {
+  document.querySelector('.first-paragraph').textContent = sequenceText.first;
+  
+  const shuffledParagraphs = shuffleParagraphs();
+  correctOrder = shuffledParagraphs.map(p => sequenceText.paragraphs.indexOf(p));
+  
+  const paragraphsHTML = shuffledParagraphs
+    .map((p, idx) => `<div class="paragraph-option" data-index="${idx}">
+      ${String.fromCharCode(65 + idx)}. ${p}
+    </div>`).join('');
+    
+  document.getElementById('paragraphs').innerHTML = paragraphsHTML;
+  
+  document.querySelectorAll('.paragraph-option').forEach(p => {
+    p.addEventListener('click', handleParagraphClick);
+  });
+}
+
+function initializeBlankProblem() {
+  const randomBlankIndex = Math.floor(Math.random() * blankText.blanks.length);
+  const selectedBlankText = blankText.blanks[randomBlankIndex];
+  currentBlankAnswer = selectedBlankText.text;
+  
+  let displayText = blankText.fullText.replace(
+    `[${selectedBlankText.text}]`,
+    '<span class="blank">_________</span>'
+  );
+  
+  // Remove other brackets
+  displayText = displayText.replace(/\[|\]/g, '');
+  
+  document.querySelector('#blank-problem .blank-text').innerHTML = displayText;
+  
+  const choices = [...selectedBlankText.alternatives, selectedBlankText.text]
+    .sort(() => Math.random() - 0.5);
+  
+  document.querySelector('#blank-problem .choices').innerHTML = choices
+    .map((choice, idx) => `<div class="choice" data-choice="${choice}">${choice}</div>`)
+    .join('');
+    
+  document.querySelectorAll('.choice').forEach(choice => {
+    choice.addEventListener('click', handleBlankChoice);
+  });
+}
+
+function initializeInsertProblem() {
+  document.querySelector('.sentence-to-insert').textContent = insertText.sentenceToInsert;
+  
+  const insertTextContainer = document.querySelector('.insert-text');
+  let html = '';
+  
+  // Add first insertion option
+  html += `<div class="insert-option" data-position="0">여기에 삽입</div>`;
+  
+  // Add text paragraphs with only 4 more insertion options at strategic points
+  insertText.text.forEach((paragraph, index) => {
+    html += `<p>${paragraph}</p>`;
+    // Only add insertion options at positions 2, 3, 5, and 7
+    if (index === 1 || index === 2 || index === 4 || index === 6) {
+      html += `<div class="insert-option" data-position="${index + 1}">여기에 삽입</div>`;
+    }
+  });
+  
+  insertTextContainer.innerHTML = html;
+  
+  document.querySelectorAll('#insert-problem .insert-option').forEach(option => {
+    option.addEventListener('click', handleInsertSelection);
+  });
+}
+
+function handleInsertSelection(e) {
+  document.querySelectorAll('.insert-option').forEach(opt => opt.classList.remove('selected'));
+  e.target.classList.add('selected');
+  selectedInsertPosition = parseInt(e.target.dataset.position);
+}
+
+function handleBlankChoice(e) {
+  document.querySelectorAll('.choice').forEach(c => c.classList.remove('selected'));
+  e.target.classList.add('selected');
+  selectedBlank = e.target.dataset.choice;
+}
+
+function shuffleParagraphs() {
+  let shuffled = [...sequenceText.paragraphs];
+  do {
+    shuffled = shuffled.sort(() => Math.random() - 0.5);
+  } while (arraysEqual(shuffled, sequenceText.paragraphs));
+  
+  return shuffled;
+}
+
+function arraysEqual(a, b) {
+  return a.length === b.length && a.every((val, idx) => val === b[idx]);
+}
+
+function handleParagraphClick(e) {
+  const paragraph = e.target;
+  const index = parseInt(paragraph.dataset.index);
+  
+  if (paragraph.classList.contains('selected')) {
+    paragraph.classList.remove('selected');
+    currentSelection = currentSelection.filter(i => i !== index);
+  } else if (currentSelection.length < 3) {
+    paragraph.classList.add('selected');
+    currentSelection.push(index);
+  }
+  
+  updateAnswerSlots();
+}
+
+function updateAnswerSlots() {
+  const slots = document.querySelectorAll('.answer-slot');
+  slots.forEach((slot, idx) => {
+    if (currentSelection[idx] !== undefined) {
+      slot.textContent = String.fromCharCode(65 + currentSelection[idx]);
+    } else {
+      slot.textContent = `${idx + 1}번`;
+    }
+  });
+}
+
+function checkAnswer() {
+  if (currentProblemType === 'sequence') {
+    checkSequenceAnswer();
+  } else if (currentProblemType === 'blank') {
+    checkBlankAnswer();
+  } else if (currentProblemType === 'insert') {
+    checkInsertAnswer();
+  }
+}
+
+function checkSequenceAnswer() {
+  if (currentSelection.length !== 3) {
+    document.querySelector('#sequence-problem .result').textContent = "모든 문단을 선택해주세요!";
+    document.querySelector('#sequence-problem .result').className = 'result';
+    return;
+  }
+  
+  const isCorrect = currentSelection.every((val, idx) => {
+    const correctIdx = sequenceText.paragraphs.indexOf(sequenceText.paragraphs[correctOrder[val]]);
+    return correctIdx === idx;
+  });
+  
+  const resultDiv = document.querySelector('#sequence-problem .result');
+  if (isCorrect) {
+    resultDiv.textContent = "정답입니다!";
+    resultDiv.className = 'result correct';
+  } else {
+    resultDiv.textContent = "틀렸습니다. 다시 시도해보세요.";
+    resultDiv.className = 'result incorrect';
+  }
+}
+
+function checkBlankAnswer() {
+  if (!selectedBlank) {
+    document.querySelector('#blank-problem .result').textContent = "답을 선택해주세요!";
+    document.querySelector('#blank-problem .result').className = 'result';
+    return;
+  }
+  
+  const isCorrect = selectedBlank === currentBlankAnswer;
+  const resultDiv = document.querySelector('#blank-problem .result');
+  
+  if (isCorrect) {
+    resultDiv.textContent = "정답입니다!";
+    resultDiv.className = 'result correct';
+  } else {
+    resultDiv.textContent = "틀렸습니다. 다시 시도해보세요.";
+    resultDiv.className = 'result incorrect';
+  }
+}
+
+function checkInsertAnswer() {
+  if (selectedInsertPosition === null) {
+    document.querySelector('#insert-problem .result').textContent = "삽입할 위치를 선택해주세요!";
+    document.querySelector('#insert-problem .result').className = 'result';
+    return;
+  }
+  
+  const isCorrect = selectedInsertPosition === insertText.correctPosition;
+  const resultDiv = document.querySelector('#insert-problem .result');
+  
+  if (isCorrect) {
+    resultDiv.textContent = "정답입니다!";
+    resultDiv.className = 'result correct';
+  } else {
+    resultDiv.textContent = "틀렸습니다. 다시 시도해보세요.";
+    resultDiv.className = 'result incorrect';
+  }
+}
+
+initializeTypeSelection();
+document.querySelectorAll('.check-answer').forEach(button => {
+  button.addEventListener('click', checkAnswer);
+});
+</script>
+</body></html>
